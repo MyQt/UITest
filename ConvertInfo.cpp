@@ -19,7 +19,7 @@ void Video_Convert::init()
 
 QString Video_Convert::validateTitle(QString title)
 {
-    return  title.replace(QRegExp("[\\\\:*?\"<>|& #]"), "_");
+    return  title.replace(QRegExp("[《》:*?\"<>|& #]"), "_");
 }
 
 QString Video_Convert::join(QString path1, QString path2)
@@ -110,25 +110,32 @@ void Video_Convert::traversalSource(QString path)
                     */
                     QString m3u8_folder = filePath.replace("\\", "/");
                     // # :不包括最后一个'/'位置，以得到文件父的路径
-//                    m3u8_folder = m3u8_folder[0:m3u8_folder.rfind('/')]
-//                    with open(filepath, 'r') as m3f:
-//                        lineStrs = m3f.readlines()
-//                        for lineStr in lineStrs:
-//                            lineStr = lineStr.replace('\n', '')
-//                            if lineStr.find('#EXT') == -1:
-//                                splitStr = lineStr.split('/')
-//                                # 例如：E:/Quark/Download/1/a (1,a为后补的两个字符串)
-//                                convert_info['m3u8'].append(
-//                                    m3u8_folder+'/'+splitStr[len(splitStr)-2]+'/'+splitStr[len(splitStr)-1])
-
-//                        convert_info['title'] = os.path.splitext(
-//                            filepath[filepath.rfind('\\')+1:len(filepath)])[0]  # 获取去除路径与后缀名以后的单独文件名
-//                        convert_info['title'] = convert_info['title'].replace(
-//                            ' ', '')
-//                        if convert_info['title'] != '':
-//                            allfile.append(convert_info)
-//                            init_convert_info()
-//                            floor += 1
+                    m3u8_folder = m3u8_folder.mid(0, m3u8_folder.lastIndexOf('/'));
+                    QFile f(filePath);
+                    if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) return;
+                    QTextStream in(&f);
+                    QStringList lineStrs;
+                    while(!in.atEnd()) {
+                        lineStrs.append(in.readLine());
+                    }
+                    foreach(QString lineStr, lineStrs) {
+                        lineStr = lineStr.replace("\n", "");
+                        if (!lineStr.contains('#EXT')) {
+                            QStringList splitStr = lineStr.split('/');
+                            // # 例如：E:/Quark/Download/1/a (1,a为后补的两个字符串)
+                            stConvertInfo._m3u8.append(
+                                m3u8_folder+'/'+splitStr[splitStr.length()-2]+'/'+splitStr[splitStr.length()-1]);
+                        }
+                    }
+                    QStringList splitFilePath = filePath.split("/");
+                    QString fileHasExt = splitFilePath[splitFilePath.length()-1];
+                    stConvertInfo._title = fileHasExt.mid(0, fileHasExt.length()-5); // 减去".m3u8"长度5  //# 获取去除路径与后缀名以后的单独文件名
+                    stConvertInfo._title = stConvertInfo._title.replace(" ", "");
+                    if (stConvertInfo._title != "") {
+                        m_convertList.append(stConvertInfo);
+                        stConvertInfo.init();
+                        m_floor++;
+                    }
                 }
                 if (stConvertInfo._type == "m4s" && !stConvertInfo._title.isEmpty() &&
                        !stConvertInfo._video.isEmpty() && !stConvertInfo._audio.isEmpty() ) {
@@ -197,6 +204,7 @@ void Video_Convert::run()
     QDir dir;
     QString outDir = m_outDir;
     QString mergeName = "mergeflv.txt";
+    QString mergeTsName = "mergets.txt";
     foreach(auto video_info, m_convertList) {
        if (video_info._part !="" && video_info._title != video_info._part)  {
            outDir +='/' + video_info._title;
@@ -227,11 +235,16 @@ void Video_Convert::run()
 
            qDebug()<<outFile+".mp4合并完成";
        } else if(video_info._type == "blv") {
-           QString outFile = outDir + '/' + video_info._part;
-           qDebug()<<outFile+".mp4开始合并";
+           QString outFile;
+           if (outDir.endsWith("/")) {
+                 outFile = outDir + video_info._part;
+            } else {
+                 outFile = outDir + '/' + video_info._part;
+            }
+            qDebug()<<outFile+".mp4开始合并";
             if (video_info._blv_num == 1) // 单文件直接移动重命名
             {
-
+                QFile::copy(video_info._blv[0], outFile+".mp4");
             } else { // 多文件合并转换输出
 
                 if (QFile::exists(mergeName)) {
@@ -252,12 +265,60 @@ void Video_Convert::run()
                         }
                     }
                     // 多个flv文件合并
-
+                    QProcess* poc = new QProcess(this);
+                    QString command = QString("ffmpeg -f concat -safe 0 -i " + mergeName + " -codec copy " + outFile + ".mp4");
+                    poc->setProcessChannelMode(QProcess::MergedChannels);
+                    poc->start(command);
                 }
             }
            qDebug()<<outFile+".mp4合并完成";
        } else if (video_info._type == "m3u8") {
+            // 合并m3u8文件
+           QString outFile;
 
+           if (outDir.endsWith("/")) {
+                 outFile = outDir + video_info._part;
+            } else {
+                 outFile = outDir + '/' + video_info._part;
+            }
+            qDebug()<<outFile+".mp4开始合并";
+            if(QFile::exists(mergeTsName)) {
+                QFile::remove(mergeTsName);
+            }
+            foreach(auto ts_file, video_info._m3u8) {
+                QString ts_file_add_ext = ts_file;
+                if(!QFile::exists(ts_file+".ts")) {
+                    if (!QFile::exists(ts_file)) {
+                        continue;
+                    }
+                    QString ext_name = ts_file.split(".")[1];
+                    if (ext_name =="") {
+                        ts_file_add_ext += ".ts";
+                        QFile::rename(ts_file,ts_file_add_ext);
+
+                    } else if (ext_name !=".ts") {
+                        continue;
+                    }
+                } else { // ts文件存在
+                    ts_file_add_ext += ".ts";
+                }
+                // 追加打开合并脚本,不存在则创建
+                QFile fileMerge(mergeTsName);
+                if (fileMerge.open(QIODevice::Append)) {
+                    fileMerge.write("file ");
+                    QString ts_file_write = "'"+ts_file_add_ext+"'"+"\n";
+                    fileMerge.write(ts_file_write.toStdString().c_str());
+                    fileMerge.close();
+                }
+            }
+            // 多个ts文件合并
+            if (QFile::exists(mergeTsName)) {
+                QProcess* poc = new QProcess(this);
+                QString command = QString("ffmpeg -f concat -safe 0 -i " + mergeTsName + " -codec copy " + outFile + ".mp4");
+                poc->setProcessChannelMode(QProcess::MergedChannels);
+                poc->start(command);
+            }
+            qDebug()<<outFile+".mp4合并完成";
         } else { // 格式错误
            emit updateUI(4, video_info._type,index);
            return;
@@ -269,6 +330,9 @@ void Video_Convert::run()
     // 删除中间件
     if (QFile::exists(mergeName)) {
          QFile::remove(mergeName);
+    }
+    if (QFile::exists(mergeTsName)) {
+         QFile::remove(mergeTsName);
     }
     emit updateUI(3, "转码工作全部完成", index);
 
