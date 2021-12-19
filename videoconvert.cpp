@@ -8,6 +8,7 @@ VideoConvert::VideoConvert(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::VideoConvert)
 {
+    setWindowFlags(Qt::FramelessWindowHint);  // 无边框+无状态栏图标
     ui->setupUi(this);
     connect(&m_convert, SIGNAL(updateUI(int, QString, int)), this, SLOT(UpdateUI(int, QString, int)));
 }

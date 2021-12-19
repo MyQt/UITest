@@ -1,47 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>weather/citykeys/citykeys.txt</file>
-        <file>weather/images/icon.ico</file>
-        <file>weather/images/UI.png</file>
-        <file>weather/images/UI1.png</file>
-        <file>weather/images/UI2.png</file>
-        <file>weather/images/UI3.png</file>
-        <file>weather/images/UI4.png</file>
-        <file>weather/images/UI5.png</file>
-        <file>weather/images/UI6.png</file>
-        <file>weather/images/UI7.png</file>
-        <file>weather/images/UI8.png</file>
-        <file>weather/images/UI9.png</file>
-        <file>weather/images/update.png</file>
-        <file>weather/images/update_on.png</file>
-        <file>weather/images/中雨.png</file>
-        <file>weather/images/中雪.png</file>
-        <file>weather/images/关闭按钮.png</file>
-        <file>weather/images/关闭按钮1.png</file>
-        <file>weather/images/冻雨.png</file>
-        <file>weather/images/多云.png</file>
-        <file>weather/images/大暴雨 .png</file>
-        <file>weather/images/大雨.png</file>
-        <file>weather/images/大雪.png</file>
-        <file>weather/images/小雨.png</file>
-        <file>weather/images/小雪.png</file>
-        <file>weather/images/强沙尘暴.png</file>
-        <file>weather/images/扬沙.png</file>
-        <file>weather/images/晴.png</file>
-        <file>weather/images/暴雨.png</file>
-        <file>weather/images/暴雪.png</file>
-        <file>weather/images/最小化.png</file>
-        <file>weather/images/最小化1.png</file>
-        <file>weather/images/查找.png</file>
-        <file>weather/images/浮尘.png</file>
-        <file>weather/images/特大暴雨.png</file>
-        <file>weather/images/阴.png</file>
-        <file>weather/images/阵雨.png</file>
-        <file>weather/images/阵雪.png</file>
-        <file>weather/images/雨夹雪.png</file>
-        <file>weather/images/雷阵雨.png</file>
-        <file>weather/images/雷阵雨伴有冰雹.png</file>
-        <file>weather/images/雾.png</file>
-        <file>weather/images/霾.png</file>
+        <file>images/bg.png</file>
     </qresource>
 </RCC>
