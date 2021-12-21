@@ -41,7 +41,7 @@ class Video_Convert : public QThread
 {
     Q_OBJECT
 public:
-    Video_Convert(QObject* parent = 0)
+    Video_Convert(QObject* parent = 0) :QThread(parent)
     {
         init();
     }

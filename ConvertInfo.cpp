@@ -9,7 +9,6 @@
 #include <QDebug>
 #include <QProcess>
 
-
 void Video_Convert::init()
 {
     m_floor = 0;
@@ -19,7 +18,7 @@ void Video_Convert::init()
 
 QString Video_Convert::validateTitle(QString title)
 {
-    return  title.replace(QRegExp("[《》:*?\"<>|& #]"), "_");
+    return  title.replace(QRegExp("[《》:*?\"<>|&#$\\s\\/\\\\]"), "_");
 }
 
 QString Video_Convert::join(QString path1, QString path2)
@@ -120,7 +119,7 @@ void Video_Convert::traversalSource(QString path)
                     }
                     foreach(QString lineStr, lineStrs) {
                         lineStr = lineStr.replace("\n", "");
-                        if (!lineStr.contains('#EXT')) {
+                        if (!lineStr.contains("#EXT")) {
                             QStringList splitStr = lineStr.split('/');
                             // # 例如：E:/Quark/Download/1/a (1,a为后补的两个字符串)
                             stConvertInfo._m3u8.append(
@@ -202,51 +201,36 @@ void Video_Convert::run()
 {
     int index = 0;
     QDir dir;
-    QString outDir = m_outDir;
+
     QString mergeName = "mergeflv.txt";
     QString mergeTsName = "mergets.txt";
     foreach(auto video_info, m_convertList) {
+        QString outDir = m_outDir;
+        // 如果是合集，则根据合集标题创建新的文件夹
        if (video_info._part !="" && video_info._title != video_info._part)  {
            outDir +='/' + video_info._title;
        }
-       outDir.replace(" ", "");
        if(!dir.exists(outDir)) {
            dir.mkdir(outDir);
        }
        if (video_info._part !="" && video_info._title != video_info._part)  {
-            emit updateUI(1, video_info._title+'/'+video_info._part, index);
+            emit updateUI(1, video_info._title+'/'+video_info._part + "准备开始!", index);
        } else {
-           emit updateUI(1, video_info._title, index);
+           emit updateUI(1, video_info._title + "准备开始", index);
        }
        // 执行ffmpeg转码操作
+       QString outFile = outDir + '/' + video_info._part;;
+       qDebug()<<outFile+".mp4开始合并";
+       QString command = "";
+       bool bCommand = true;
        if (video_info._type == "m4s") {
-
-           QString outFile;
-           if (outDir.endsWith("/")) {
-                 outFile = outDir + video_info._part;
-            } else {
-                 outFile = outDir + '/' + video_info._part;
-            }
-           qDebug()<<outFile+".mp4开始合并";
-           QProcess* poc = new QProcess(this);
-           QString command = QString("ffmpeg -i "+ video_info._video + " -i " + video_info._audio + " -codec copy " + outFile+".mp4");
-           poc->setProcessChannelMode(QProcess::MergedChannels);
-           poc->start(command);
-
-           qDebug()<<outFile+".mp4合并完成";
+           command = QString("ffmpeg -i "+ video_info._video + " -i " + video_info._audio + " -codec copy " + outFile+".mp4");
        } else if(video_info._type == "blv") {
-           QString outFile;
-           if (outDir.endsWith("/")) {
-                 outFile = outDir + video_info._part;
-            } else {
-                 outFile = outDir + '/' + video_info._part;
-            }
-            qDebug()<<outFile+".mp4开始合并";
             if (video_info._blv_num == 1) // 单文件直接移动重命名
             {
+                bCommand = false;
                 QFile::copy(video_info._blv[0], outFile+".mp4");
             } else { // 多文件合并转换输出
-
                 if (QFile::exists(mergeName)) {
                     QFile::remove(mergeName);
                     foreach(auto blv_file, video_info._blv) {
@@ -264,24 +248,13 @@ void Video_Convert::run()
                             fileMerge.close();
                         }
                     }
-                    // 多个flv文件合并
-                    QProcess* poc = new QProcess(this);
-                    QString command = QString("ffmpeg -f concat -safe 0 -i " + mergeName + " -codec copy " + outFile + ".mp4");
-                    poc->setProcessChannelMode(QProcess::MergedChannels);
-                    poc->start(command);
+                    // 多个flv文件合并                    
+                    command = QString("ffmpeg -f concat -safe 0 -i " + mergeName + " -codec copy " + outFile + ".mp4");
                 }
             }
-           qDebug()<<outFile+".mp4合并完成";
+
        } else if (video_info._type == "m3u8") {
             // 合并m3u8文件
-           QString outFile;
-
-           if (outDir.endsWith("/")) {
-                 outFile = outDir + video_info._part;
-            } else {
-                 outFile = outDir + '/' + video_info._part;
-            }
-            qDebug()<<outFile+".mp4开始合并";
             if(QFile::exists(mergeTsName)) {
                 QFile::remove(mergeTsName);
             }
@@ -313,18 +286,33 @@ void Video_Convert::run()
             }
             // 多个ts文件合并
             if (QFile::exists(mergeTsName)) {
-                QProcess* poc = new QProcess(this);
-                QString command = QString("ffmpeg -f concat -safe 0 -i " + mergeTsName + " -codec copy " + outFile + ".mp4");
-                poc->setProcessChannelMode(QProcess::MergedChannels);
-                poc->start(command);
+                command = QString("ffmpeg -f concat -safe 0 -i " + mergeTsName + " -codec copy " + outFile + ".mp4");
             }
-            qDebug()<<outFile+".mp4合并完成";
+
         } else { // 格式错误
            emit updateUI(4, video_info._type,index);
            return;
        }
+       QString standardOutput("");
+       if (bCommand) { // 调用外部程序
+           QProcess* process = new QProcess(this);
+           process->setReadChannel(QProcess::StandardOutput);
+           process->setProcessChannelMode(QProcess::MergedChannels);
+           process->close();
+           process->start(command);
+           if (!process->waitForStarted(-1)) {
+               emit updateUI(5, outFile+"\n启动合并失败",index);
+               return;
+           }
+           if (!process->waitForFinished(-1)) {
+               emit updateUI(6, outFile+"\n合并失败",index);
+               return;
+           }
+           standardOutput = process->readAllStandardOutput();
+       }
+
        // 当前合并完成
-       emit updateUI(2, video_info._title+"/"+video_info._part, index);
+       emit updateUI(2, video_info._title+"/"+video_info._part + " " +"合并完成!"+"合并输出信息:\n" + standardOutput+"\n", index);
        index++;
     }
     // 删除中间件
@@ -334,6 +322,6 @@ void Video_Convert::run()
     if (QFile::exists(mergeTsName)) {
          QFile::remove(mergeTsName);
     }
-    emit updateUI(3, "转码工作全部完成", index);
+    emit updateUI(3, "温馨提示,转码工作全部完成!", index);
 
 }

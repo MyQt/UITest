@@ -61,13 +61,12 @@ void VideoConvert::on_btn_choice_out_clicked()
         QMessageBox::information(this, "警告", "请选择合法源视频目录");
         return;
     }
+    // 去除最后的'/'
+    if(path.endsWith("/")) {
+        path = path.left(path.length()-1);
+    }
     m_convert.m_outDir = path;
     ui->label_dir_out->setText(path);
-}
-
-void VideoConvert::on_chk_delete_source_stateChanged(int arg1)
-{
-
 }
 
 void VideoConvert::on_btn_go_clicked()
@@ -87,21 +86,32 @@ void VideoConvert::UpdateUI(int type, QString strMessage, int index)
 {
     if (type == 1 || type == 2) {
         ui->list_file->setCurrentIndex(QModelIndex(m_itemModel.index(index, 0)));
-        setWindowTitle(strMessage);
+        static_cast<QWidget*>(parent())->setWindowTitle(strMessage);
     } else if(type == 3) {
         ui->btn_go->setText("全部转换完成");
         ui->list_file->setCurrentIndex(QModelIndex(m_itemModel.index(m_convert.m_convertList.length()-1, 0)));
-        setWindowTitle("B站视频转换");
+        static_cast<QWidget*>(parent())->setWindowTitle("视频转换");
         if (ui->chk_delete_source->isChecked()) {
             // 删除源目录文件
             m_convert.clearDir(ui->label_dir_load->text());
             ui->chk_delete_source->setDisabled(false);
         }
-        QMessageBox::information(this, "温馨提示", "全部转码任务完成");
     } else if (type == 4) { // 格式错误
         QMessageBox::information(this, "警告!致命错误!", "视频格式"+strMessage+"不支持,程序即将退出");
         QApplication::exit();
+        return;
+    } else if (type == 5) // 启动外部程序ffmpeg失败
+    {
+        QMessageBox::information(this, "警告!致命错误!", strMessage);
+        QApplication::exit();
+        return;
+    } else if (type == 6) // 执行外部程序ffmpeg失败
+    {
+        QMessageBox::information(this, "警告!致命错误!", strMessage);
+        QApplication::exit();
+        return;
     }
+    ui->textBrowser_ConsoleOut->append(strMessage+"\n");
     ui->progress_convert->setValue(index+1);
     QApplication::processEvents();
 }
