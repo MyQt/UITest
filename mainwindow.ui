@@ -50,7 +50,7 @@
    <bool>false</bool>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-image: url(:/images/bg.png);</string>
+   <string notr="true"/>
   </property>
   <property name="toolButtonStyle">
    <enum>Qt::ToolButtonIconOnly</enum>
@@ -115,6 +115,37 @@
     </property>
    </widget>
    <widget class="VideoConvert" name="widget_convert" native="true">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>963</width>
+      <height>640</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>963</width>
+      <height>640</height>
+     </size>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>963</width>
+      <height>640</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="MyMediaPlayer" name="widget_player" native="true">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>0</x>
@@ -451,6 +482,12 @@ border-color: rgb(170, 85, 255);</string>
    <class>VideoConvert</class>
    <extends>QWidget</extends>
    <header>videoconvert.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MyMediaPlayer</class>
+   <extends>QWidget</extends>
+   <header location="global">mymediaplayer.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

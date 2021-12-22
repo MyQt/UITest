@@ -1,5 +1,21 @@
 <RCC>
     <qresource prefix="/">
         <file>images/bg.png</file>
+        <file>icons/circled_play_64px.png</file>
+        <file>icons/fast_forward_round_64px.png</file>
+        <file>icons/insert_button_64px.png</file>
+        <file>icons/list_menu_64px.png</file>
+        <file>icons/rewind_button_round_64px.png</file>
+        <file>icons/stop_circled_64px.png</file>
+        <file>icons/no_audio_16px.png</file>
+        <file>icons/voice_16px.png</file>
+        <file>icons/vox_player_64px.png</file>
+        <file>icons/down_squared_32px.png</file>
+        <file>icons/up_squared_32px.png</file>
+        <file>icons/bottom_32px.png</file>
+        <file>icons/top_32px.png</file>
+        <file>icons/add_32px.png</file>
+        <file>icons/minus_32px.png</file>
+        <file>icons/sorting_32px.png</file>
     </qresource>
 </RCC>

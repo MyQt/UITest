@@ -25,6 +25,8 @@ void MainWindow::showRightUI(EUI_Type euiType)
 {
     ui->widget_convert->setVisible(euiType == e_convert);
     ui->calendarWidget->setVisible(euiType == e_calander);
+    ui->widget_player->setVisible(euiType == e_mediaplayer);
+
 }
 
 void MainWindow::showTime()
