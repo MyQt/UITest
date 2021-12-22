@@ -176,6 +176,9 @@ bool Video_Convert::parseJson(QString filePath, st_convert_info &stConvertInfo)
             } else {
                 stConvertInfo._part = title;
             }
+            if (item.contains(QStringLiteral("page"))) {
+                stConvertInfo._episode_index = item["page"].toInt();
+            }
         } else {
             QJsonValue jsonValueList = jsonObject.value(QStringLiteral("ep"));
             QJsonObject item = jsonValueList.toObject();
@@ -219,7 +222,14 @@ void Video_Convert::run()
            emit updateUI(1, video_info._title + "准备开始", index);
        }
        // 执行ffmpeg转码操作
-       QString outFile = outDir + '/' + video_info._part;;
+       QString outFile;
+       if ( video_info._episode_index > 0) {
+           outFile = outDir + '/' + QString::number(video_info._episode_index) + '.' + video_info._part;
+       }
+       else {
+           outFile = outDir +'/' + video_info._part;
+       }
+
        qDebug()<<outFile+".mp4开始合并";
        QString command = "";
        bool bCommand = true;

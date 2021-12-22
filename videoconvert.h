@@ -25,8 +25,6 @@ private slots:
 
     void on_btn_choice_out_clicked();
 
-    void on_chk_delete_source_stateChanged(int arg1);
-
     void on_btn_go_clicked();
 
     void UpdateUI(int type, QString strMessage, int index);

@@ -9,14 +9,15 @@
 
 typedef struct convert_info
 {
-    QString _type;
-    QString _title;
-    QString _part;
-    QString _video;
-    QString _audio;
-    QStringList _blv;
-    int _blv_num;
-    QStringList _m3u8;
+    QString _type; // 类型: m4s,blv,m3u8
+    QString _title; // 标题
+    QString _part; // 具体的名字
+    QString _video; // 视频全路径
+    QString _audio; // 音频全路径
+    QStringList _blv; // blv分段全路径列表
+    int _blv_num; // blv分段数量
+    QStringList _m3u8; // m3u8分段全路径列表
+    int _episode_index; // 合集中视频索引，用于排序
     convert_info()
     {
         init();
@@ -31,6 +32,7 @@ typedef struct convert_info
         _blv.clear();
         _m3u8.clear();
         _blv_num = 0;
+        _episode_index = -1;
     }
 
 }st_convert_info;
