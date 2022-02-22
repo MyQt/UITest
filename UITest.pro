@@ -1,9 +1,24 @@
-QT       += core gui network
+QT       += core gui network xml
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++11
+# 配置file_copies
+CONFIG += file_copies
 
+# 创建examples变量并配置
+# 配置需要复制的文件或目录(支持通配符)
+drivers.files = $$PWD/listitemicons
+# 配置需要复制的目标目录, $$OUT_PWD为QMake内置变量，含义为程序输出目录
+CONFIG(debug, debug|release){
+    drivers.path = $$OUT_PWD/debug
+} else {
+    drivers.path = $$OUT_PWD/release
+}
+
+
+# 配置COPIES
+COPIES += drivers
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
@@ -17,6 +32,9 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     ConvertInfo.cpp \
+    formlist.cpp \
+    formlistitem.cpp \
+    formlistitemcreate.cpp \
     main.cpp \
     mainwindow.cpp \
     mymediaplayer.cpp \
@@ -24,11 +42,17 @@ SOURCES += \
 
 HEADERS += \
     ConvertInfo.h \
+    formlist.h \
+    formlistitem.h \
+    formlistitemcreate.h \
     mainwindow.h \
     mymediaplayer.h \
     videoconvert.h
 
 FORMS += \
+    formlist.ui \
+    formlistitem.ui \
+    formlistitemcreate.ui \
     mainwindow.ui \
     mymediaplayer.ui \
     videoconvert.ui

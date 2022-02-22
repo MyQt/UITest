@@ -1,4 +1,4 @@
-#include "mainwindow.h"
+﻿#include "mainwindow.h"
 #include "ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
@@ -26,7 +26,7 @@ void MainWindow::showRightUI(EUI_Type euiType)
     ui->widget_convert->setVisible(euiType == e_convert);
     ui->calendarWidget->setVisible(euiType == e_calander);
     ui->widget_player->setVisible(euiType == e_mediaplayer);
-
+    ui->widget_list->setVisible(euiType == e_complex_list);
 }
 
 void MainWindow::showTime()
@@ -50,4 +50,9 @@ void MainWindow::on_pushButton_Calander_clicked()
 void MainWindow::on_pushButton_player_clicked()
 {
     showRightUI(e_mediaplayer);
+}
+
+void MainWindow::on_pushButton_list_clicked()
+{
+    showRightUI(e_complex_list);
 }

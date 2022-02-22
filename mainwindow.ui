@@ -173,6 +173,34 @@
      </size>
     </property>
    </widget>
+   <widget class="FormList" name="widget_list" native="true">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>963</width>
+      <height>640</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>963</width>
+      <height>640</height>
+     </size>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>963</width>
+      <height>640</height>
+     </size>
+    </property>
+   </widget>
   </widget>
   <widget class="QDockWidget" name="dockWidget">
    <property name="sizePolicy">
@@ -322,9 +350,9 @@ border-color: rgb(255, 85, 127);</string>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_4">
+       <widget class="QPushButton" name="pushButton_list">
         <property name="text">
-         <string>PushButton</string>
+         <string>复杂列表</string>
         </property>
         <property name="flat">
          <bool>true</bool>
@@ -488,6 +516,12 @@ border-color: rgb(170, 85, 255);</string>
    <class>MyMediaPlayer</class>
    <extends>QWidget</extends>
    <header location="global">mymediaplayer.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>FormList</class>
+   <extends>QWidget</extends>
+   <header location="global">formlist.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
