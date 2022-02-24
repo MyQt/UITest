@@ -1,4 +1,4 @@
-QT       += core gui network xml
+QT       += core gui network xml sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -8,7 +8,8 @@ CONFIG += file_copies
 
 # 创建examples变量并配置
 # 配置需要复制的文件或目录(支持通配符)
-drivers.files = $$PWD/listitemicons
+drivers.files += $$PWD/listitemicons\
+                 $$PWD/config
 # 配置需要复制的目标目录, $$OUT_PWD为QMake内置变量，含义为程序输出目录
 CONFIG(debug, debug|release){
     drivers.path = $$OUT_PWD/debug
@@ -35,19 +36,27 @@ SOURCES += \
     formlist.cpp \
     formlistitem.cpp \
     formlistitemcreate.cpp \
+    handlefactory.cpp \
     main.cpp \
     mainwindow.cpp \
     mymediaplayer.cpp \
-    videoconvert.cpp
+    sqldatahandle.cpp \
+    videoconvert.cpp \
+    xmldatahandle.cpp
 
 HEADERS += \
     ConvertInfo.h \
+    DataHandle.h \
+    common.h \
     formlist.h \
     formlistitem.h \
     formlistitemcreate.h \
+    handlefactory.h \
     mainwindow.h \
     mymediaplayer.h \
-    videoconvert.h
+    sqldatahandle.h \
+    videoconvert.h \
+    xmldatahandle.h
 
 FORMS += \
     formlist.ui \

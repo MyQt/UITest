@@ -1,12 +1,14 @@
 ﻿#include "formlist.h"
 #include "ui_formlist.h"
-#include <QDomDocument>
-#include <QApplication>
-#include <QFile>
 #include <QMessageBox>
 #include <QTextStream>
 #include "formlistitem.h"
+#include "handlefactory.h"
+#include <QApplication>
+#include <QPair>
 
+const QString strConfigPath = "/config/";
+const QString strIconPath = "/listitemicons/";
 
 FormList::FormList(QWidget *parent) :
     QWidget(parent),
@@ -16,11 +18,35 @@ FormList::FormList(QWidget *parent) :
     initUI();
 }
 
+bool FormList::initHandleFactory()
+{
+    for(int i = EHT_XML; i < EHT_END; i++) {
+        mMapDataHandle.insert((handleType)i, HandleFactory::getInstance()->createProduct((handleType)i));
+    }
+
+    return true;
+}
+
 void FormList::initUI()
 {
-    if (!readInfoXml()) {
-        return;
+    QString strInfoNames[EHT_END-1] = {"info.xml", "info.db"};
+    bool bRead = false;
+    initHandleFactory();
+    for (int i = EHT_XML;i<EHT_END;i++) {
+            QString strInfoName = QApplication::applicationDirPath()+strConfigPath+strInfoNames[i-1];
+            auto iter = mMapDataHandle.find((handleType)i);
+            if (!iter.value()->init(strInfoName)) {
+                QMessageBox::critical(this, tr("致命错误"), tr("初始化或读取配置信息失败"));
+                return;
+            }
+            if (/*!bRead && */i==EHT_SQL && !iter.value()->readInfo(mVecFoodInfo)) {
+                QMessageBox::critical(this, tr("致命错误"), tr("初始化或读取配置信息失败"));
+                return;
+            }
+
+            bRead = true;
     }
+
     if (!addAllItem()) {
         return;
     }
@@ -36,92 +62,22 @@ void FormList::addNewItemSlot(QString strName, QString strIcon, QString strNote)
     info.strIcon = strIcon;
     info.strNote = strNote;
     insertItem(info, ui->listWidget->count()-1);
-    writeInfoXml(info);
+    writeInfo(info);
 }
 
-bool FormList::readInfoXml()
+bool FormList::readInfo()
 {
-    QDomDocument reader;
-    QFile file(QApplication::applicationDirPath()+"/listitemicons/info.xml");
-    if (!file.open(QFile::ReadOnly|QFile::Text))
-    {
-        QMessageBox::critical(this,tr("Error"),
-                              tr("读取配置文件%1失败").arg(file.fileName()));
-        return false;
-    }
-    if (!reader.setContent(&file)) {
-        file.close();
-        return false;
-    }
-
-    file.close();
-    QDomElement root = reader.documentElement(); // 读取根节点
-    QDomNode node = root.firstChild(); // 读取第一个子节点
-    while(!node.isNull()) {
-        QDomElement foodEle = node.toElement();
-
-        if (foodEle.tagName().compare("FOOD")==0) {
-            QDomAttr attrName = foodEle.attributeNode(tr("NAME"));
-            QDomAttr attrIcon = foodEle.attributeNode(tr("ICON"));
-            QDomAttr attrNote = foodEle.attributeNode(tr("NOTE"));
-            foodInfo _info;
-            _info.strName = attrName.value();
-            _info.strIcon = QApplication::applicationDirPath()+"/listitemicons/"+attrIcon.value();
-            _info.strNote = attrNote.value();
-            mVecFoodInfo.push_back(_info);
-        }
-        node = node.nextSibling(); // 读取下一个FOOD
-    }
-
     return true;
 }
 
-bool FormList::writeInfoXml(foodInfo& info)
+bool FormList::writeInfo(foodInfo& info)
 {
-    QDomDocument writer;
-    QFile file(QApplication::applicationDirPath()+"/listitemicons/info.xml");
-    if (!file.open(QFile::ReadOnly|QFile::Text))
-    {
-        QMessageBox::critical(this,tr("Error"),
-                              tr("读取配置文件%1失败").arg(file.fileName()));
-        return false;
+    for (auto iter = mMapDataHandle.begin(); iter != mMapDataHandle.end(); iter++) {
+        if(!iter.value()->writeInfo(info)) {
+            QMessageBox::critical(this, tr("致命错误"), tr("写入条目失败"));
+            return false;
+        }
     }
-    if (!writer.setContent(&file)) {
-      file.close();
-      return false;
-    }
-    file.close();
-    /* 创建节点
-     * <FOOD>
-     *  <NAME></NAME>
-     *  <ICON></ICON>
-     *  <NOTE></NOTE>
-     * </FOOD>
-    */
-    QDomElement root = writer.firstChildElement();
-    QDomElement data = writer.createElement("FOOD");
-    QDomAttr name = writer.createAttribute("NAME");
-    name.setValue(info.strName);
-    data.setAttributeNode(name);
-    QDomAttr icon = writer.createAttribute("ICON");
-    icon.setValue(info.strIcon);
-    data.setAttributeNode(icon);
-
-    QDomAttr note = writer.createAttribute("NOTE");
-    note.setValue(info.strNote);
-    data.setAttributeNode(note);
-
-    root.appendChild(data);
-
-    // 保存xml文件
-    if (!file.open(QIODevice::WriteOnly)) {
-        QMessageBox::critical(this,tr("Error"),
-                              tr("读取配置文件%1失败").arg(file.fileName()));
-        return false;
-    }
-    QTextStream out(&file);
-    writer.save(out, 4);
-    file.close();
 
     return true;
 }
@@ -133,8 +89,10 @@ bool FormList::insertItem(foodInfo& info, int index)
     pItem->setSizeHint(QSize(852,128));
     ui->listWidget->insertItem(index, pItem);
     Formlistitem* pListItem = new Formlistitem();
-    pListItem->setResource(info.strName, QApplication::applicationDirPath()+"/listitemicons/"+info.strIcon, info.strNote);
+    pListItem->setResource(info.strName, QApplication::applicationDirPath()+strIconPath+info.strIcon, info.strNote);
     ui->listWidget->setItemWidget(pItem, pListItem);
+
+    return true;
 }
 
 bool FormList::insertItemCreate(int index)
@@ -145,6 +103,8 @@ bool FormList::insertItemCreate(int index)
     ui->listWidget->insertItem(index, pItem);
 
     ui->listWidget->setItemWidget(pItem, &mItemCreate);
+
+    return true;
 }
 
 bool FormList::addAllItem()
@@ -155,7 +115,7 @@ bool FormList::addAllItem()
        pItem->setSizeHint(QSize(852,128));
        ui->listWidget->addItem(pItem);
        Formlistitem* pListItem = new Formlistitem(ui->listWidget);
-       pListItem->setResource(item.strName, item.strIcon, item.strNote);
+       pListItem->setResource(item.strName, QApplication::applicationDirPath()+strIconPath+item.strIcon, item.strNote);
        ui->listWidget->setItemWidget(pItem, pListItem);
     }
 
@@ -167,4 +127,8 @@ bool FormList::addAllItem()
 FormList::~FormList()
 {
     delete ui;
+    for (auto iter = mMapDataHandle.begin(); iter != mMapDataHandle.end(); iter++) {
+        iter.value()->close();
+        delete iter.value();
+    }
 }
