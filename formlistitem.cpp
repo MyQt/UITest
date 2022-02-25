@@ -14,6 +14,11 @@ Formlistitem::~Formlistitem()
     delete ui;
 }
 
+QString Formlistitem::getKey()
+{
+    return ui->label_name->text();
+}
+
 void Formlistitem::setResource(QString strName, QString strIcon, QString strNote)
 {
     ui->label_name->setText(strName);

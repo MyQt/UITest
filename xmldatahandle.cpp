@@ -98,3 +98,47 @@ bool XmlDataHandle::writeInfo(foodInfo &info)
 
     return true;
 }
+
+bool XmlDataHandle::updateInfo(foodInfo &info, QString strOldName)
+{
+    QDomDocument reader;
+    QFile file(mInfoName);
+    if (!file.open(QFile::ReadOnly|QFile::Text))
+    {
+        return false;
+    }
+    if (!reader.setContent(&file)) {
+        file.close();
+        return false;
+    }
+
+    file.close();
+    QDomElement root = reader.documentElement(); // 读取根节点
+    QDomNode node = root.firstChild(); // 读取第一个子节点
+    bool bUpdated = false;
+    while(!node.isNull()) {
+        QDomElement foodEle = node.toElement();
+
+        if (foodEle.tagName().compare("FOOD")==0) {
+            QDomAttr attrName = foodEle.attributeNode("NAME");
+            if (attrName.value() == strOldName) {
+                foodEle.setAttribute("ICON", info.strIcon);
+                foodEle.setAttribute("NOTE", info.strNote);
+                bUpdated = true;
+                break;
+            }
+        }
+        node = node.nextSibling(); // 读取下一个FOOD
+    }
+    if (bUpdated) {
+        // 保存xml文件
+        if (!file.open(QIODevice::WriteOnly)) {
+            return false;
+        }
+        QTextStream out(&file);
+        reader.save(out, 4);
+        file.close();
+    }
+
+    return true;
+}

@@ -29,6 +29,7 @@ bool FormList::initHandleFactory()
 
 void FormList::initUI()
 {
+    mUpdateIndex = -1;
     QString strInfoNames[EHT_END-1] = {"info.xml", "info.db"};
     bool bRead = false;
     initHandleFactory();
@@ -65,6 +66,31 @@ void FormList::addNewItemSlot(QString strName, QString strIcon, QString strNote)
     writeInfo(info);
 }
 
+void FormList::UpdateItemSlot(QString strName, QString strIcon, QString strNote)
+{
+    foodInfo info;
+    info.strName = strName;
+    info.strIcon = strIcon.split("/").last();
+    info.strNote = strNote;
+
+    // 更新修改的控件
+   QWidget*pWidget = ui->listWidget->itemWidget(ui->listWidget->item(mUpdateIndex-1));
+   QString strOldName;
+   if (pWidget != nullptr) {
+       strOldName = ((Formlistitem*)pWidget)->getKey();
+       ((Formlistitem*)pWidget)->setResource(strName, strIcon, strNote);
+   }
+   // 删除更新编辑控件
+   QListWidgetItem* pRemoveItem = ui->listWidget->takeItem(mUpdateIndex);
+   delete pRemoveItem;
+   pRemoveItem = nullptr;
+   mUpdateIndex = -1;
+   // 写入修改的数据
+   foreach(auto item, mMapDataHandle) {
+       item->updateInfo(info, strOldName);
+   }
+}
+
 bool FormList::readInfo()
 {
     return true;
@@ -87,6 +113,11 @@ bool FormList::insertItem(foodInfo& info, int index)
     // 添加新建条目框
     QListWidgetItem* pItem = new QListWidgetItem();
     pItem->setSizeHint(QSize(852,128));
+    QVariant var;
+    roleData role;
+    role.setData(info, EIT_Show);
+    var.setValue(role);
+    pItem->setData(Qt::UserRole, var);
     ui->listWidget->insertItem(index, pItem);
     Formlistitem* pListItem = new Formlistitem();
     pListItem->setResource(info.strName, QApplication::applicationDirPath()+strIconPath+info.strIcon, info.strNote);
@@ -100,6 +131,7 @@ bool FormList::insertItemCreate(int index)
     // 添加新建条目框
     QListWidgetItem* pItem = new QListWidgetItem(ui->listWidget);
     pItem->setSizeHint(QSize(852,170));
+    pItem->setData(Qt::UserRole, EIT_Create);
     ui->listWidget->insertItem(index, pItem);
 
     ui->listWidget->setItemWidget(pItem, &mItemCreate);
@@ -107,16 +139,31 @@ bool FormList::insertItemCreate(int index)
     return true;
 }
 
+void FormList::insertItemUpdate(foodInfo& info, int nIndex)
+{
+    // 将更新条目放入选中行的下面
+    QVariant var;
+    roleData role;
+    role.setData(info, EIT_Update);
+    var.setValue(role);
+    QListWidgetItem* pItem = new QListWidgetItem();
+    pItem->setSizeHint(QSize(852,170));
+    pItem->setData(Qt::UserRole, var);
+    ui->listWidget->insertItem(nIndex, pItem);
+    mItemUpdate = new Formlistitemcreate();
+    mItemUpdate->setCreateType(EICT_Update);
+    mItemUpdate->setResource(info.strName, QApplication::applicationDirPath()+strIconPath+info.strIcon, info.strNote);
+    connect(mItemUpdate, &Formlistitemcreate::updateItem, this, &FormList::UpdateItemSlot);
+
+    ui->listWidget->setItemWidget(pItem, mItemUpdate);
+
+}
+
 bool FormList::addAllItem()
 {
     // 添加所有食物配置项到列表显示
-    foreach(auto item, mVecFoodInfo) {
-       QListWidgetItem* pItem = new QListWidgetItem(ui->listWidget);
-       pItem->setSizeHint(QSize(852,128));
-       ui->listWidget->addItem(pItem);
-       Formlistitem* pListItem = new Formlistitem(ui->listWidget);
-       pListItem->setResource(item.strName, QApplication::applicationDirPath()+strIconPath+item.strIcon, item.strNote);
-       ui->listWidget->setItemWidget(pItem, pListItem);
+    for(int i = 0; i < mVecFoodInfo.size(); i++) {
+        insertItem(mVecFoodInfo[i], i);
     }
 
     insertItemCreate(ui->listWidget->count());
@@ -131,4 +178,31 @@ FormList::~FormList()
         iter.value()->close();
         delete iter.value();
     }
+}
+
+void FormList::on_listWidget_currentRowChanged(int currentRow)
+{
+
+    roleData _data = ui->listWidget->currentItem()->data(Qt::UserRole).value<roleData>();
+
+    if (_data.nType == EIT_Show && mUpdateIndex-1 != currentRow) {
+
+        insertItemUpdate(_data._foodInfo, currentRow+1);
+        if (mUpdateIndex != -1) {
+            if (mUpdateIndex > currentRow) { // 插入到了之前更新元素的前面
+                QListWidgetItem* pRemoveItem = ui->listWidget->takeItem(mUpdateIndex+1);
+                delete pRemoveItem;
+                pRemoveItem = nullptr;
+                mUpdateIndex = currentRow + 1;
+            } else { // 插入到了后面
+                QListWidgetItem* pRemoveItem = ui->listWidget->takeItem(mUpdateIndex);
+                delete pRemoveItem;
+                pRemoveItem = nullptr;
+                mUpdateIndex = currentRow;
+            }
+        } else {
+            mUpdateIndex = currentRow + 1;
+        }
+    }
+
 }

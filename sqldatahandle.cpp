@@ -75,6 +75,16 @@ bool SqlDataHandle::writeInfo(foodInfo &info)
     return true;
 }
 
+bool SqlDataHandle::updateInfo(foodInfo &info, QString strOldName)
+{
+    QString strUpdate = QString("update FOOD set NAME='%1',ICON='%2',NOTE='%3' WHERE NAME = '%4'").arg(info.strName, info.strIcon, info.strNote, strOldName);
+    if (!mSqlQuery->exec(strUpdate)) {
+        qDebug()<<"update failure: "<<mSqlQuery->lastError();
+        return false;
+    }
+    return true;
+}
+
 void SqlDataHandle::close()
 {
     if (mSqlQuery != nullptr) {

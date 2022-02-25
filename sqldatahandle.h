@@ -13,6 +13,7 @@ public:
     virtual bool init(QString& infoName) override;
     virtual bool readInfo(QVector<foodInfo>& vecFoodInfo) override;
     virtual bool writeInfo(foodInfo &info) override;
+    virtual bool updateInfo(foodInfo& info, QString strOldName) override;
     virtual void close() override;
     bool initDatabase();
 private:

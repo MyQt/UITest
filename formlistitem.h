@@ -15,6 +15,8 @@ public:
     explicit Formlistitem(QWidget *parent = nullptr);
     ~Formlistitem();
     void setResource(QString strName, QString strIcon, QString strNote);
+    QString getKey();
+
 private:
     Ui::Formlistitem *ui;
 };
