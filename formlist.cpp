@@ -150,7 +150,12 @@ bool FormList::insertItemCreate(int index)
     // 添加新建条目框
     QListWidgetItem* pItem = new QListWidgetItem(ui->listWidget);
     pItem->setSizeHint(QSize(852,170));
-    pItem->setData(Qt::UserRole, EIT_Create);
+    QVariant var;
+    roleData role;
+    foodInfo info;
+    role.setData(info, EIT_Create);
+    var.setValue(role);
+    pItem->setData(Qt::UserRole, var);
     ui->listWidget->insertItem(index, pItem);
     mItemCreate = new Formlistitemcreate();
     connect(mItemCreate, &Formlistitemcreate::addNewItem, this, &FormList::addNewItemSlot);

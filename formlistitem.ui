@@ -6,27 +6,37 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>852</width>
-    <height>128</height>
+    <width>925</width>
+    <height>120</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: rgb(158, 255, 143);
+color: rgb(170, 154, 62);</string>
+  </property>
   <widget class="QLabel" name="label_icon">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>16</y>
+     <x>9</x>
+     <y>9</y>
      <width>96</width>
      <height>96</height>
     </rect>
    </property>
    <property name="sizePolicy">
-    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
      <horstretch>0</horstretch>
      <verstretch>0</verstretch>
     </sizepolicy>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>16</width>
+     <height>16</height>
+    </size>
    </property>
    <property name="text">
     <string/>
@@ -37,29 +47,31 @@
    <property name="scaledContents">
     <bool>true</bool>
    </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
   </widget>
-  <widget class="QLabel" name="label_name">
+  <widget class="QWidget" name="">
    <property name="geometry">
     <rect>
-     <x>150</x>
+     <x>110</x>
      <y>10</y>
-     <width>891</width>
-     <height>31</height>
+     <width>811</width>
+     <height>102</height>
     </rect>
    </property>
-   <property name="text">
-    <string>TextLabel</string>
-   </property>
-  </widget>
-  <widget class="QTextBrowser" name="textBrowser_note">
-   <property name="geometry">
-    <rect>
-     <x>140</x>
-     <y>50</y>
-     <width>711</width>
-     <height>64</height>
-    </rect>
-   </property>
+   <layout class="QVBoxLayout" name="verticalLayout" stretch="1,5">
+    <item>
+     <widget class="QLabel" name="label_name">
+      <property name="text">
+       <string>TextLabel</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QTextBrowser" name="textBrowser_note"/>
+    </item>
+   </layout>
   </widget>
  </widget>
  <resources/>
