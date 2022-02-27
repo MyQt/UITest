@@ -18,10 +18,47 @@ FormList::FormList(QWidget *parent) :
     initUI();
 }
 
+bool FormList::reloadInfo()
+{
+    mUpdateIndex = -1;
+    DataHandle* pHandle = nullptr;
+    mVecFoodInfo.clear();
+    if (ui->radioButton_database->isChecked()) {
+        pHandle = mMapDataHandle.find(EHT_SQL).value();
+    } else if (ui->radioButton_xml->isChecked()) {
+        pHandle = mMapDataHandle.find(EHT_XML).value();
+    }
+    if (pHandle == nullptr) {
+        QMessageBox::critical(this, tr("致命错误"), tr("不支持的读取方式"));
+        return false;
+    }
+    if (!pHandle->readInfo(mVecFoodInfo)) {
+        QMessageBox::critical(this, tr("致命错误"), tr("读取配置信息失败"));
+        return false;
+    }
+
+
+    if (!addAllItem()) {
+        return false;
+    }
+    EditElementVisible();
+
+    return true;
+}
+
 bool FormList::initHandleFactory()
 {
+    QString strInfoNames[EHT_END-1] = {"info.xml", "info.db"};
     for(int i = EHT_XML; i < EHT_END; i++) {
-        mMapDataHandle.insert((handleType)i, HandleFactory::getInstance()->createProduct((handleType)i));
+        DataHandle* pHandle = HandleFactory::getInstance()->createProduct((handleType)i);
+        QString strInfoName = QApplication::applicationDirPath()+strConfigPath+strInfoNames[i-1];
+        if (!pHandle->init(strInfoName)) {
+            QMessageBox::critical(this, tr("致命错误"), tr("初始化配置信息失败"));
+            delete pHandle;
+            return false;
+        }
+        mMapDataHandle.insert((handleType)i, pHandle);
+
     }
 
     return true;
@@ -29,29 +66,11 @@ bool FormList::initHandleFactory()
 
 void FormList::initUI()
 {
-    mUpdateIndex = -1;
-    QString strInfoNames[EHT_END-1] = {"info.xml", "info.db"};
-    bool bRead = false;
-    initHandleFactory();
-    for (int i = EHT_XML;i<EHT_END;i++) {
-            QString strInfoName = QApplication::applicationDirPath()+strConfigPath+strInfoNames[i-1];
-            auto iter = mMapDataHandle.find((handleType)i);
-            if (!iter.value()->init(strInfoName)) {
-                QMessageBox::critical(this, tr("致命错误"), tr("初始化或读取配置信息失败"));
-                return;
-            }
-            if (/*!bRead && */i==EHT_SQL && !iter.value()->readInfo(mVecFoodInfo)) {
-                QMessageBox::critical(this, tr("致命错误"), tr("初始化或读取配置信息失败"));
-                return;
-            }
-
-            bRead = true;
-    }
-
-    if (!addAllItem()) {
+    if (!initHandleFactory() || !reloadInfo()) {
+        QApplication::exit(0);
         return;
     }
-    connect(&mItemCreate, &Formlistitemcreate::addNewItem, this, &FormList::addNewItemSlot);
+
 }
 
 void FormList::addNewItemSlot(QString strName, QString strIcon, QString strNote)
@@ -133,8 +152,10 @@ bool FormList::insertItemCreate(int index)
     pItem->setSizeHint(QSize(852,170));
     pItem->setData(Qt::UserRole, EIT_Create);
     ui->listWidget->insertItem(index, pItem);
+    mItemCreate = new Formlistitemcreate();
+    connect(mItemCreate, &Formlistitemcreate::addNewItem, this, &FormList::addNewItemSlot);
 
-    ui->listWidget->setItemWidget(pItem, &mItemCreate);
+    ui->listWidget->setItemWidget(pItem, mItemCreate);
 
     return true;
 }
@@ -161,6 +182,7 @@ void FormList::insertItemUpdate(foodInfo& info, int nIndex)
 
 bool FormList::addAllItem()
 {
+    ui->listWidget->clear();
     // 添加所有食物配置项到列表显示
     for(int i = 0; i < mVecFoodInfo.size(); i++) {
         insertItem(mVecFoodInfo[i], i);
@@ -182,27 +204,61 @@ FormList::~FormList()
 
 void FormList::on_listWidget_currentRowChanged(int currentRow)
 {
-
+    if (currentRow == -1) {
+        return;
+    }
     roleData _data = ui->listWidget->currentItem()->data(Qt::UserRole).value<roleData>();
+    if (ui->checkBox_bEdit->isChecked()) {
+        if (_data.nType == EIT_Show && mUpdateIndex-1 != currentRow) {
 
-    if (_data.nType == EIT_Show && mUpdateIndex-1 != currentRow) {
-
-        insertItemUpdate(_data._foodInfo, currentRow+1);
-        if (mUpdateIndex != -1) {
-            if (mUpdateIndex > currentRow) { // 插入到了之前更新元素的前面
-                QListWidgetItem* pRemoveItem = ui->listWidget->takeItem(mUpdateIndex+1);
-                delete pRemoveItem;
-                pRemoveItem = nullptr;
+            insertItemUpdate(_data._foodInfo, currentRow+1);
+            if (mUpdateIndex != -1) {
+                if (mUpdateIndex > currentRow) { // 插入到了之前更新元素的前面
+                    QListWidgetItem* pRemoveItem = ui->listWidget->takeItem(mUpdateIndex+1);
+                    delete pRemoveItem;
+                    pRemoveItem = nullptr;
+                    mUpdateIndex = currentRow + 1;
+                } else { // 插入到了后面
+                    QListWidgetItem* pRemoveItem = ui->listWidget->takeItem(mUpdateIndex);
+                    delete pRemoveItem;
+                    pRemoveItem = nullptr;
+                    mUpdateIndex = currentRow;
+                }
+            } else {
                 mUpdateIndex = currentRow + 1;
-            } else { // 插入到了后面
-                QListWidgetItem* pRemoveItem = ui->listWidget->takeItem(mUpdateIndex);
-                delete pRemoveItem;
-                pRemoveItem = nullptr;
-                mUpdateIndex = currentRow;
             }
-        } else {
-            mUpdateIndex = currentRow + 1;
         }
     }
+}
 
+void FormList::EditElementVisible()
+{
+    QListWidgetItem* pUpdateItem = ui->listWidget->item(mUpdateIndex);
+    QListWidgetItem* pCreateItem = ui->listWidget->item(ui->listWidget->count()-1);
+    if (ui->checkBox_bEdit->isChecked()) { // 允许编辑
+        pCreateItem->setHidden(false);
+        if (pUpdateItem != nullptr) {
+            pUpdateItem->setHidden(false);
+        }
+    } else {
+        pCreateItem->setHidden(true);
+        if (pUpdateItem != nullptr) {
+            pUpdateItem->setHidden(true);
+        }
+    }
+}
+
+void FormList::on_checkBox_bEdit_stateChanged(int arg1)
+{
+    EditElementVisible();
+}
+
+void FormList::on_radioButton_database_clicked()
+{
+    reloadInfo();
+}
+
+void FormList::on_radioButton_xml_clicked()
+{
+    reloadInfo();
 }

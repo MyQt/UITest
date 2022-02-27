@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QVector>
 #include <QMap>
+#include <QMouseEvent>
 #include "formlistitemcreate.h"
 #include "common.h"
 #include "DataHandle.h"
@@ -49,13 +50,21 @@ public:
     bool insertItem(foodInfo& info, int index);
     bool insertItemCreate(int index);
     void insertItemUpdate(foodInfo& info,int nIndex);
+    void EditElementVisible();
+    bool reloadInfo();
 private slots:
     void on_listWidget_currentRowChanged(int currentRow);
+
+    void on_checkBox_bEdit_stateChanged(int arg1);
+
+    void on_radioButton_database_clicked();
+
+    void on_radioButton_xml_clicked();
 
 private:
     Ui::FormList *ui;
     QVector<foodInfo> mVecFoodInfo;
-    Formlistitemcreate mItemCreate;
+    Formlistitemcreate* mItemCreate;
     Formlistitemcreate* mItemUpdate;
     QMap<handleType, DataHandle*> mMapDataHandle;
     int mUpdateIndex; // 更新的列表项

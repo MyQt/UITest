@@ -10,6 +10,7 @@ MainWindow::MainWindow(QWidget *parent)
     showRightUI(e_convert);
     ui->lcdNumber->setDigitCount(8);
     ui->lcdNumber->setPalette(Qt::cyan);
+
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(showTime()));
     timer->start(1000);
