@@ -70,7 +70,6 @@ void FormList::initUI()
         QApplication::exit(0);
         return;
     }
-
 }
 
 void FormList::addNewItemSlot(QString strName, QString strIcon, QString strNote)
@@ -132,6 +131,7 @@ bool FormList::insertItem(foodInfo& info, int index)
     // 添加新建条目框
     QListWidgetItem* pItem = new QListWidgetItem();
     pItem->setSizeHint(QSize(852,128));
+
     QVariant var;
     roleData role;
     role.setData(info, EIT_Show);

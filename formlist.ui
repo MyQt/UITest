@@ -93,6 +93,21 @@ QListWidget::item:selected{background:lightgray; color:red; }
 QListWidget::item:selected:!active{border-width:0px; background:lightgreen; }
                           </string>
        </property>
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+       <property name="selectionBehavior">
+        <enum>QAbstractItemView::SelectItems</enum>
+       </property>
+       <property name="textElideMode">
+        <enum>Qt::ElideMiddle</enum>
+       </property>
+       <property name="resizeMode">
+        <enum>QListView::Adjust</enum>
+       </property>
       </widget>
      </item>
     </layout>

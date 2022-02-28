@@ -17,5 +17,6 @@
         <file>icons/add_32px.png</file>
         <file>icons/minus_32px.png</file>
         <file>icons/sorting_32px.png</file>
+        <file>icons/crown_16px.png</file>
     </qresource>
 </RCC>
