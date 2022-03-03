@@ -39,6 +39,7 @@ SOURCES += \
     handlefactory.cpp \
     main.cpp \
     mainwindow.cpp \
+    mydockwidget.cpp \
     mymediaplayer.cpp \
     sqldatahandle.cpp \
     videoconvert.cpp \
@@ -53,6 +54,7 @@ HEADERS += \
     formlistitemcreate.h \
     handlefactory.h \
     mainwindow.h \
+    mydockwidget.h \
     mymediaplayer.h \
     sqldatahandle.h \
     videoconvert.h \

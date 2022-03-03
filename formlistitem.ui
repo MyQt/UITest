@@ -63,6 +63,15 @@ color: rgb(170, 154, 62);</string>
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
+       <property name="mouseTracking">
+        <bool>false</bool>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
+       <property name="acceptDrops">
+        <bool>false</bool>
+       </property>
       </widget>
      </item>
     </layout>

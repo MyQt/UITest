@@ -34,13 +34,14 @@ private slots:
     void on_pushButton_player_clicked();
 
     void on_pushButton_list_clicked();
-
+    void onDockFold(bool bFold);
 private:
     void showRightUI(EUI_Type euiType);
 
 private:
     Ui::MainWindow *ui;
     QTimer* timer;
+
 
 };
 #endif // MAINWINDOW_H
