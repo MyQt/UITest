@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 #include<QTimer>
-
+#include<QPropertyAnimation>
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -27,21 +27,27 @@ public:
     ~MainWindow();
 private slots:
     void showTime();
-    void on_pushButton_convert_clicked();
+    void on_pushButton_Calander_2_clicked();
 
-    void on_pushButton_Calander_clicked();
+    void on_pushButton_convert_2_clicked();
 
-    void on_pushButton_player_clicked();
+    void on_pushButton_player_2_clicked();
 
-    void on_pushButton_list_clicked();
-    void onDockFold(bool bFold);
+    void on_pushButton_list_2_clicked();
+
+protected:
+    virtual void mouseDoubleClickEvent(QMouseEvent *event);
+
 private:
     void showRightUI(EUI_Type euiType);
-
+    void initPropertyAnimation();
+    void startPropertyAnimation();
 private:
     Ui::MainWindow *ui;
     QTimer* timer;
-
+    bool mAnimationFlag;
+    QPropertyAnimation* mDockAnimation;
+    QPropertyAnimation* mRightAnimation;
 
 };
 #endif // MAINWINDOW_H
